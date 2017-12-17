@@ -1,5 +1,7 @@
 import java.security.cert.X509Certificate
 import javax.net.ssl.{HostnameVerifier, SSLSession}
+
+import com.typesafe.config.Config
 import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
 import org.apache.http.client.HttpClient
 import org.apache.http.config.RegistryBuilder
@@ -17,19 +19,26 @@ class Shard {
     this
   }
 
-  def domain(value: String) = config("domain", value)
+  def shard(value: String) = config("shard", value)
   def username(value: String) = config("username", value)
   def password(value: String) = config("password", value)
   def token(value: String) = username("token").password(value)
 
   def connect: ShardSession = {
     val client = Shard.client(options("username"), options("password"))
-    ShardSession(client)
+    ShardSession(client, options("shard"))
   }
 }
 
 object Shard {
-  def apply: Shard = new Shard()
+  def apply(name: String): Shard = new Shard().shard(name)
+
+  def apply(config: Config): Shard = {
+    new Shard()
+      .shard(config.getString("shard.url"))
+      .username(config.getString("credentials.username"))
+      .password(config.getString("credentials.password"))
+  }
 
   def client(username: String, password: String): HttpClient = {
     val sslContext = new SSLContextBuilder().loadTrustMaterial(new TrustStrategy() {
