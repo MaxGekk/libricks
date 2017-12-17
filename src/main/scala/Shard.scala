@@ -11,13 +11,15 @@ import org.apache.http.impl.client.{BasicCredentialsProvider, HttpClients}
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.ssl.{SSLContextBuilder, TrustStrategy}
 
-class Shard {
+class Shard extends Endpoint {
   val options = new scala.collection.mutable.HashMap[String, String]
 
   def config(key: String, value: String): Shard = synchronized {
     options += key -> value
     this
   }
+
+  override def path: String = options("shard")
 
   def shard(value: String) = config("shard", value)
   def username(value: String) = config("username", value)

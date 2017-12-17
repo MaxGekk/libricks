@@ -4,15 +4,17 @@ import org.apache.http.client.HttpClient
 import org.apache.http.entity.StringEntity
 import org.apache.http.util.EntityUtils
 
-case class ShardSession(client: HttpClient, shard: String) {
-  def tokens = req("/api/2.0/token/list", "get", "")
+case class ShardSession(client: HttpClient, shard: String) extends Endpoint {
+  override def path: String = shard + "/api"
 
-  def req(path: String, httpMethod: String, data: String): Either[Error, String] = {
+  lazy val token = new Token(this)
+
+  def req(endpoint: String, httpMethod: String, data: String = ""): String = {
     val request = httpMethod.toUpperCase match {
-      case "POST" => new org.apache.http.client.methods.HttpPost(shard + path)
+      case "POST" => new org.apache.http.client.methods.HttpPost(endpoint)
       case _ =>
         new org.apache.http.client.methods.HttpEntityEnclosingRequestBase() {
-          setURI(URI.create(shard + path))
+          setURI(URI.create(endpoint))
           override def getMethod(): String = httpMethod.toUpperCase
         }
     }
@@ -24,10 +26,10 @@ case class ShardSession(client: HttpClient, shard: String) {
     if (statusCode != 200) {
       val entity = response.getEntity
       val msg = if (entity == null) "null" else EntityUtils.toString(response.getEntity)
-      Left(Error(statusCode, msg))
+      throw new RestApiReqException(statusCode, msg)
     }
 
     val responseJson = handler.handleResponse(response)
-    Right(responseJson)
+    responseJson
   }
 }
