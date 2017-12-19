@@ -35,11 +35,24 @@ case class NewToken(token_value: String, token_info: TokenInfo)
 case class TokenList(token_infos: List[TokenInfo])
 
 /**
-  * Proxy class for Databricks Token API
+  * Proxy class for Databricks Token API. An instance of the class is available
+  * in any shard session. For instance, having of shardSession:
+  * {{{
+  *   // Creating of new token with life time 1 hour
+  *   val newToken = shardSession.token.create(60*60, "dev token")
+  *   // Getting of all access token
+  *   val tokens = shardSession.token.list
+  *   println(s"tokens = ${shardSession.token.list}")
+  *   // Find staging tokens and delete them
+  *   tokens.collect {
+  *     case tokenInfo if tokenInfo.comment == "stage" => tokenInfo.token_id
+  *   } foreach shardSession.token.delete
+  * }}}
   * @param session - connection session to user's shard
   */
 class Token(session: ShardSession) extends Endpoint {
-  implicit val formats = DefaultFormats
+  private implicit val formats = DefaultFormats
+  /** Common suffix of paths to token endpoints */
   override def path: String = session.path + "/2.0/token"
 
   /**
