@@ -2,7 +2,7 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 /**
-  *
+  * Information associated with a token
   * @param token_id - token hash - sha256
   * @param creation_time - value returned by System.currentTimeMillis() when the token
   *                      was generated on server side. It is the difference,
@@ -48,7 +48,8 @@ class Token(session: ShardSession) extends Endpoint {
     *
     * @param lifetimeInSec - expiration time (in seconds) associated with the new token
     * @param comment - comment associated with the new token.
-    * @return [[NewToken]] - a pair of token value + its meta-info [[TokenInfo]]
+    * @return [[NewToken]] - a pair of token value + its meta-info [[TokenInfo]].
+    *        The token value should be used for authentication at Databricks services.
     */
   def create(lifetimeInSec: Long, comment: String): NewToken = {
     val json = session.req(s"${path}/create", "post",
@@ -62,6 +63,11 @@ class Token(session: ShardSession) extends Endpoint {
     parsed.extract[NewToken]
   }
 
+  /**
+    * Deletes (un-registered) a token by its id
+    * @param token_id - token identifier returned in [[TokenInfo]]
+    * @return true - if the token was removed successfully otherwise false
+    */
   def delete(token_id: String): Boolean = {
     val json = session.req(s"${path}/delete", "post",
       s"""
@@ -74,6 +80,11 @@ class Token(session: ShardSession) extends Endpoint {
     parsed == JObject(List())
   }
 
+  /**
+    * Lists all active access token for given shard and user
+    * @return a list of [[TokenInfo]]. It doesn't contain token value
+    *         which could be used for authentication
+    */
   def list: List[TokenInfo] = {
     val json = session.req(s"${path}/list", "get")
     val parsed = parse(json)
