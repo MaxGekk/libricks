@@ -1,5 +1,4 @@
 import java.net.URI
-
 import org.apache.http.client.HttpClient
 import org.apache.http.entity.StringEntity
 import org.apache.http.util.EntityUtils
@@ -19,17 +18,20 @@ case class ShardSession(client: HttpClient, shard: String) extends Endpoint {
         }
     }
     request.setEntity(new StringEntity(data))
+
     val response = client.execute(request)
-    val handler = new org.apache.http.impl.client.BasicResponseHandler()
 
     val statusCode = response.getStatusLine.getStatusCode
-    if (statusCode != 200) {
-      val entity = response.getEntity
-      val msg = if (entity == null) "null" else EntityUtils.toString(response.getEntity)
+    if (statusCode == 200) {
+      val handler = new org.apache.http.impl.client.BasicResponseHandler()
+      val responseJson = handler.handleResponse(response)
+      responseJson
+    } else {
+      val msg = response.getEntity match {
+        case null => None
+        case entity => Some(EntityUtils.toString(entity))
+      }
       throw new RestApiReqException(statusCode, msg)
     }
-
-    val responseJson = handler.handleResponse(response)
-    responseJson
   }
 }
