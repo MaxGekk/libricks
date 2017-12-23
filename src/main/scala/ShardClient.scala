@@ -8,7 +8,7 @@ import org.apache.http.util.EntityUtils
   * @param client - http request executor
   * @param shard - url of the shard like https://my-shard.cloud.databricks.com:443
   */
-case class ShardSession(client: HttpClient, shard: String) extends Endpoint {
+case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
   /** Common suffix of all endpoints of Databricks public API */
   override def path: String = shard + "/api"
 

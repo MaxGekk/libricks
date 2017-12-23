@@ -50,7 +50,7 @@ case class TokenList(token_infos: List[TokenInfo])
   * }}}
   * @param session - connection session to user's shard
   */
-class Token(session: ShardSession) extends Endpoint {
+class Token(session: ShardClient) extends Endpoint {
   private implicit val formats = DefaultFormats
   /** Common suffix of paths to token endpoints */
   override def path: String = session.path + "/2.0/token"

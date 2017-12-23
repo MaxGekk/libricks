@@ -26,9 +26,9 @@ class Shard extends Endpoint {
   def password(value: String) = config("password", value)
   def token(value: String) = username("token").password(value)
 
-  def connect: ShardSession = {
+  def connect: ShardClient = {
     val client = Shard.client(options("username"), options("password"))
-    ShardSession(client, options("shard"))
+    ShardClient(client, options("shard"))
   }
 }
 
