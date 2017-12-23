@@ -3,8 +3,13 @@ import org.apache.http.client.HttpClient
 import org.apache.http.entity.StringEntity
 import org.apache.http.util.EntityUtils
 
+/**
+  * Databricks REST API client - entry point of all REST API calls
+  * @param client - http request executor
+  * @param shard - url of the shard like https://my-shard.cloud.databricks.com:443
+  */
 case class ShardSession(client: HttpClient, shard: String) extends Endpoint {
-  /** Common suffix for all endpoints of Databricks public API */
+  /** Common suffix of all endpoints of Databricks public API */
   override def path: String = shard + "/api"
 
   /** Entry point for Databricks Token API like create and delete a token. */
