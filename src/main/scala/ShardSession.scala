@@ -4,10 +4,19 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.util.EntityUtils
 
 case class ShardSession(client: HttpClient, shard: String) extends Endpoint {
+  /** Common suffix for all endpoints of Databricks public API */
   override def path: String = shard + "/api"
 
+  /** Entry point for Databricks Token API like create and delete a token. */
   lazy val token = new Token(this)
 
+  /**
+    * Makes a REST request to specific endpoint
+    * @param endpoint - url like https://my-shard.cloud.databricks.com:443/api/2.0/token/list
+    * @param httpMethod - "get" or "post"
+    * @param data - entity of the https request. For example, in json format: {"token_id": 42}
+    * @return a string with json if http status is 200 otherwise throws [[RestApiReqException]]
+    */
   def req(endpoint: String, httpMethod: String, data: String = ""): String = {
     val request = httpMethod.toUpperCase match {
       case "POST" => new org.apache.http.client.methods.HttpPost(endpoint)
