@@ -14,4 +14,6 @@ trait Endpoint {
   * @param statusCode - http status code
   * @param msg - message entity of error response
   */
-class RestApiReqException(statusCode: Long, msg: Option[String]) extends Exception
+class HttpException(statusCode: Long, msg: Option[String]) extends Exception
+
+class BricksException(error: String) extends Exception

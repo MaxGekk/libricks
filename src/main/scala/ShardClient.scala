@@ -17,10 +17,11 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
 
   /**
     * Makes a REST request to specific endpoint
+ *
     * @param endpoint - url like https://my-shard.cloud.databricks.com:443/api/2.0/token/list
     * @param httpMethod - "get" or "post"
     * @param data - entity of the https request. For example, in json format: {"token_id": 42}
-    * @return a string with json if http status is 200 otherwise throws [[RestApiReqException]]
+    * @return a string with json if http status is 200 otherwise throws [[HttpException]]
     */
   def req(endpoint: String, httpMethod: String, data: String = ""): String = {
     val request = httpMethod.toUpperCase match {
@@ -45,7 +46,7 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
         case null => None
         case entity => Some(EntityUtils.toString(entity))
       }
-      throw new RestApiReqException(statusCode, msg)
+      throw new HttpException(statusCode, msg)
     }
   }
 }
