@@ -2,6 +2,8 @@ import java.net.URI
 import org.apache.http.client.HttpClient
 import org.apache.http.entity.StringEntity
 import org.apache.http.util.EntityUtils
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 /**
   * Databricks REST API client - entry point of all REST API calls
@@ -17,7 +19,7 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
 
   /**
     * Makes a REST request to specific endpoint
- *
+    *
     * @param endpoint - url like https://my-shard.cloud.databricks.com:443/api/2.0/token/list
     * @param httpMethod - "get" or "post"
     * @param data - entity of the https request. For example, in json format: {"token_id": 42}
@@ -48,5 +50,12 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
       }
       throw new HttpException(statusCode, msg)
     }
+  }
+
+  private implicit val formats = DefaultFormats
+
+  def extract[A](json: String)(implicit mf: scala.reflect.Manifest[A]): A = {
+    val parsed = parse(json)
+    parsed.extract[A]
   }
 }
