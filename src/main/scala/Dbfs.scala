@@ -48,13 +48,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
 
   def put(path: String, contents: Block, overwrite: Boolean) = {
     val resp = client.req(s"$path/put", "post",
-      s"""
-         | {
-         |   "path": "$path",
-         |   "contents": "${contents.base64}",
-         |   "overwrite": ${overwrite.toString}
-         | }
-       """.stripMargin
+      s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
     )
     client.extract[Unit](resp)
   }
