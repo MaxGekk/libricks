@@ -1,5 +1,4 @@
 import org.json4s._
-import org.json4s.jackson.JsonMethods._
 
 /**
   * Information about a token
@@ -65,15 +64,14 @@ class Token(session: ShardClient) extends Endpoint {
     *        The token value should be used for authentication at Databricks services.
     */
   def create(lifetimeInSec: Long, comment: String): NewToken = {
-    val json = session.req(s"${path}/create", "post",
+    val resp = session.req(s"$path/create", "post",
       s"""
          | {
          |   "lifetime_seconds": ${lifetimeInSec},
          |   "comment": "${comment}"
          | }
        """.stripMargin)
-    val parsed = parse(json)
-    parsed.extract[NewToken]
+    session.extract[NewToken](resp)
   }
 
   /**
@@ -81,16 +79,15 @@ class Token(session: ShardClient) extends Endpoint {
     * @param token_id - token identifier returned in [[TokenInfo]]
     * @return true - if the token was removed successfully otherwise false
     */
-  def delete(token_id: String): Boolean = {
-    val json = session.req(s"${path}/delete", "post",
+  def delete(token_id: String): Unit = {
+    val resp = session.req(s"$path/delete", "post",
       s"""
          | {
          |   "token_id": "$token_id"
          | }
        """.stripMargin
     )
-    val parsed = parse(json)
-    parsed == JObject(List())
+    session.extract[Unit](resp)
   }
 
   /**
@@ -99,9 +96,7 @@ class Token(session: ShardClient) extends Endpoint {
     *         which could be used for authentication
     */
   def list: List[TokenInfo] = {
-    val json = session.req(s"${path}/list", "get")
-    val parsed = parse(json)
-
-    parsed.extract[TokenList].token_infos
+    val resp = session.req(s"$path/list", "get")
+    session.extract[TokenList](resp).token_infos
   }
 }
