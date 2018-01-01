@@ -56,6 +56,8 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
 
   def extract[A](json: String)(implicit mf: scala.reflect.Manifest[A]): A = {
     val parsed = parse(json)
-    parsed.extract[A]
+    parsed.extractOpt[A].getOrElse (
+      throw new BricksException(parsed.extract[String])
+    )
   }
 }
