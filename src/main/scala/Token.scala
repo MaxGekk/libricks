@@ -65,12 +65,8 @@ class Token(client: ShardClient) extends Endpoint {
     */
   def create(lifetimeInSec: Long, comment: String): NewToken = {
     val resp = client.req(s"$path/create", "post",
-      s"""
-         | {
-         |   "lifetime_seconds": ${lifetimeInSec},
-         |   "comment": "${comment}"
-         | }
-       """.stripMargin)
+      s"""{"lifetime_seconds": ${lifetimeInSec},"comment": "${comment}"}"""
+    )
     client.extract[NewToken](resp)
   }
 
@@ -81,11 +77,7 @@ class Token(client: ShardClient) extends Endpoint {
     */
   def delete(token_id: String): Unit = {
     val resp = client.req(s"$path/delete", "post",
-      s"""
-         | {
-         |   "token_id": "$token_id"
-         | }
-       """.stripMargin
+      s"""{"token_id":"$token_id"}"""
     )
     client.extract[Unit](resp)
   }
