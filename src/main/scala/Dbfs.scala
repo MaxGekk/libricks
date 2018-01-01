@@ -1,50 +1,65 @@
+/**
+  * Attributes of a file or a directory
+  * @param path - full path to a file or a directory
+  * @param is_dir - true if the path is directory otherwise false
+  * @param file_size - the length of the file in bytes or 0 if the path is a directory
+  */
 case class FileInfo(path: String, is_dir: Boolean, file_size: Long)
 
-class Dbfs(session: ShardClient) extends Endpoint {
+/**
+  * The identifier should be passed into the [[Dbfs.addBlock]] and [[Dbfs.close]] calls
+  * when writing to a file through a stream.
+  * @param id - unique stream identifier
+  */
+case class StreamId(id: Long)
+
+/**
+  * Access point for Databricks DBFS Rest API
+  * @param client - connection settings to user's shard
+  */
+class Dbfs(client: ShardClient) extends Endpoint {
   /** Common suffix of paths to token endpoints */
-  override def path: String = session.path + "/2.0/dbfs"
+  override def path: String = client.path + "/2.0/dbfs"
 
-  case class Handle(handle: Long)
-
-  def create(path: String, overwrite: Boolean): Handle = {
-    val resp = session.req(s"$path/create", "post",
+  def create(path: String, overwrite: Boolean): StreamId = {
+    val resp = client.req(s"$path/create", "post",
       s"""
          | {
          |   "path": $path,
          |   "overwrite": "${overwrite.toString}"
          | }
        """.stripMargin)
-    session.extract[Handle](resp)
+    client.extract[StreamId](resp)
   }
 
   trait Block {
     def base64: String
   }
 
-  def addBlock(handle: Handle, data: Block): Unit = {
-    val resp = session.req(s"$path/add-block", "post",
+  def addBlock(handle: StreamId, data: Block): Unit = {
+    val resp = client.req(s"$path/add-block", "post",
       s"""
          | {
-         |   "handle": ${handle.handle},
+         |   "handle": ${handle.id},
          |   "data": ${data.base64}
          | }
        """.stripMargin
     )
-    session.extract[Unit](resp)
+    client.extract[Unit](resp)
   }
 
-  def close(handle: Handle): Unit = {
-    val resp = session.req(s"$path/close", "post",
+  def close(handle: StreamId): Unit = {
+    val resp = client.req(s"$path/close", "post",
       s"""
          | {
-         |   "path": ${handle.handle}
+         |   "path": ${handle.id}
          | }
        """.stripMargin)
-    session.extract[Unit](resp)
+    client.extract[Unit](resp)
   }
 
   def put(path: String, contents: Block, overwrite: Boolean) = {
-    val resp = session.req(s"$path/put", "post",
+    val resp = client.req(s"$path/put", "post",
       s"""
          | {
          |   "path": $path,
@@ -53,7 +68,7 @@ class Dbfs(session: ShardClient) extends Endpoint {
          | }
        """.stripMargin
     )
-    session.extract[Unit](resp)
+    client.extract[Unit](resp)
   }
 
   case class ReadBlock(bytes_read: Long, data: String) extends Block {
@@ -61,7 +76,7 @@ class Dbfs(session: ShardClient) extends Endpoint {
   }
 
   def read(path: String, offset: Long, length: Long): Block = {
-    val resp = session.req(s"$path/get-status", "get",
+    val resp = client.req(s"$path/get-status", "get",
       s"""
          | {
          |   "path": $path,
@@ -70,11 +85,11 @@ class Dbfs(session: ShardClient) extends Endpoint {
          | }
        """.stripMargin
     )
-    session.extract[ReadBlock](resp)
+    client.extract[ReadBlock](resp)
   }
 
   def delete(path: String, recursive: Boolean): Unit = {
-    val resp = session.req(s"$path/delete", "post",
+    val resp = client.req(s"$path/delete", "post",
       s"""
          | {
          |   "path": $path,
@@ -82,49 +97,49 @@ class Dbfs(session: ShardClient) extends Endpoint {
          | }
        """.stripMargin
     )
-    session.extract[Unit](resp)
+    client.extract[Unit](resp)
   }
 
   def getStatus(path: String): FileInfo = {
-    val resp = session.req(s"$path/get-status", "get",
+    val resp = client.req(s"$path/get-status", "get",
       s"""
          | {
          |   "path": $path
          | }
        """.stripMargin
     )
-    session.extract[FileInfo](resp)
+    client.extract[FileInfo](resp)
   }
 
   def list(path: String): List[FileInfo] = {
-    val resp = session.req(s"$path/list", "get",
+    val resp = client.req(s"$path/list", "get",
       s"""
          | {
          |   "path": $path
          | }
        """.stripMargin
     )
-    session.extract[List[FileInfo]](resp)
+    client.extract[List[FileInfo]](resp)
   }
 
   def mkdirs(path: String): Unit = {
-    val resp = session.req(s"$path/mkdirs", "post",
+    val resp = client.req(s"$path/mkdirs", "post",
       s"""
          | {
          |   "path": $path
          | }
        """.stripMargin)
-    session.extract[Unit](resp)
+    client.extract[Unit](resp)
   }
 
   def move(src: String, dst: String): Unit = {
-    val resp = session.req(s"$path/move", "post",
+    val resp = client.req(s"$path/move", "post",
       s"""
          | {
          |   "source_path": $src,
          |   "destination_path": $dst
          | }
        """.stripMargin)
-    session.extract[Unit](resp)
+    client.extract[Unit](resp)
   }
 }

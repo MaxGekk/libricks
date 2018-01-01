@@ -47,12 +47,12 @@ case class TokenList(token_infos: List[TokenInfo])
   *     case tokenInfo if tokenInfo.comment == "stage" => tokenInfo.token_id
   *   } foreach shardSession.token.delete
   * }}}
-  * @param session - connection session to user's shard
+  * @param client - connection settings to user's shard
   */
-class Token(session: ShardClient) extends Endpoint {
+class Token(client: ShardClient) extends Endpoint {
   private implicit val formats = DefaultFormats
   /** Common suffix of paths to token endpoints */
-  override def path: String = session.path + "/2.0/token"
+  override def path: String = client.path + "/2.0/token"
 
   /**
     * Creates new token in the shard if the feature was enabled by Databricks Admin:
@@ -64,14 +64,14 @@ class Token(session: ShardClient) extends Endpoint {
     *        The token value should be used for authentication at Databricks services.
     */
   def create(lifetimeInSec: Long, comment: String): NewToken = {
-    val resp = session.req(s"$path/create", "post",
+    val resp = client.req(s"$path/create", "post",
       s"""
          | {
          |   "lifetime_seconds": ${lifetimeInSec},
          |   "comment": "${comment}"
          | }
        """.stripMargin)
-    session.extract[NewToken](resp)
+    client.extract[NewToken](resp)
   }
 
   /**
@@ -80,14 +80,14 @@ class Token(session: ShardClient) extends Endpoint {
     * @return true - if the token was removed successfully otherwise false
     */
   def delete(token_id: String): Unit = {
-    val resp = session.req(s"$path/delete", "post",
+    val resp = client.req(s"$path/delete", "post",
       s"""
          | {
          |   "token_id": "$token_id"
          | }
        """.stripMargin
     )
-    session.extract[Unit](resp)
+    client.extract[Unit](resp)
   }
 
   /**
@@ -96,7 +96,7 @@ class Token(session: ShardClient) extends Endpoint {
     *         which could be used for authentication
     */
   def list: List[TokenInfo] = {
-    val resp = session.req(s"$path/list", "get")
-    session.extract[TokenList](resp).token_infos
+    val resp = client.req(s"$path/list", "get")
+    client.extract[TokenList](resp).token_infos
   }
 }
