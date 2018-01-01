@@ -23,12 +23,8 @@ class Dbfs(client: ShardClient) extends Endpoint {
 
   def create(path: String, overwrite: Boolean): StreamId = {
     val resp = client.req(s"$path/create", "post",
-      s"""
-         | {
-         |   "path": $path,
-         |   "overwrite": "${overwrite.toString}"
-         | }
-       """.stripMargin)
+      s"""{"path": "$path", "overwrite": ${overwrite.toString}}"""
+    )
     client.extract[StreamId](resp)
   }
 
@@ -38,23 +34,15 @@ class Dbfs(client: ShardClient) extends Endpoint {
 
   def addBlock(handle: StreamId, data: Block): Unit = {
     val resp = client.req(s"$path/add-block", "post",
-      s"""
-         | {
-         |   "handle": ${handle.id},
-         |   "data": ${data.base64}
-         | }
-       """.stripMargin
+      s"""{"handle": ${handle.id}, "data": "${data.base64}"}"""
     )
     client.extract[Unit](resp)
   }
 
   def close(handle: StreamId): Unit = {
     val resp = client.req(s"$path/close", "post",
-      s"""
-         | {
-         |   "path": ${handle.id}
-         | }
-       """.stripMargin)
+      s"""{"path": ${handle.id}}"""
+    )
     client.extract[Unit](resp)
   }
 
@@ -62,8 +50,8 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$path/put", "post",
       s"""
          | {
-         |   "path": $path,
-         |   "contents": ${contents.base64},
+         |   "path": "$path",
+         |   "contents": "${contents.base64}",
          |   "overwrite": ${overwrite.toString}
          | }
        """.stripMargin
@@ -79,7 +67,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$path/get-status", "get",
       s"""
          | {
-         |   "path": $path,
+         |   "path": "$path",
          |   "offset": $offset,
          |   "length": $length
          | }
@@ -90,56 +78,36 @@ class Dbfs(client: ShardClient) extends Endpoint {
 
   def delete(path: String, recursive: Boolean): Unit = {
     val resp = client.req(s"$path/delete", "post",
-      s"""
-         | {
-         |   "path": $path,
-         |   "recursive": ${recursive.toString}
-         | }
-       """.stripMargin
+      s"""{"path": "$path", "recursive": ${recursive.toString}}"""
     )
     client.extract[Unit](resp)
   }
 
   def getStatus(path: String): FileInfo = {
     val resp = client.req(s"$path/get-status", "get",
-      s"""
-         | {
-         |   "path": $path
-         | }
-       """.stripMargin
+      s"""{"path":"$path"}"""
     )
     client.extract[FileInfo](resp)
   }
 
   def list(path: String): List[FileInfo] = {
     val resp = client.req(s"$path/list", "get",
-      s"""
-         | {
-         |   "path": $path
-         | }
-       """.stripMargin
+      s"""{"path":"$path"}"""
     )
     client.extract[List[FileInfo]](resp)
   }
 
   def mkdirs(path: String): Unit = {
     val resp = client.req(s"$path/mkdirs", "post",
-      s"""
-         | {
-         |   "path": $path
-         | }
-       """.stripMargin)
+      s"""{"path":"$path"}"""
+    )
     client.extract[Unit](resp)
   }
 
   def move(src: String, dst: String): Unit = {
     val resp = client.req(s"$path/move", "post",
-      s"""
-         | {
-         |   "source_path": $src,
-         |   "destination_path": $dst
-         | }
-       """.stripMargin)
+      s"""{"source_path":"$src", "destination_path":"$dst"}"""
+    )
     client.extract[Unit](resp)
   }
 }
