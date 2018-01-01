@@ -2,8 +2,8 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 /**
-  * Information associated with a token
-  * @param token_id - token hash - sha256
+  * Information about a token
+  * @param token_id - token hash (sha256) - unique identifier of the token
   * @param creation_time - value returned by System.currentTimeMillis() when the token
   *                      was generated on server side. It is the difference,
   *                      measured in milliseconds, between the current time and midnight,

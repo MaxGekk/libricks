@@ -16,4 +16,8 @@ trait Endpoint {
   */
 class HttpException(statusCode: Long, msg: Option[String]) extends Exception
 
+/**
+  * The error returned by Databricks server
+  * @param error - unique string identified the error
+  */
 class BricksException(error: String) extends Exception
