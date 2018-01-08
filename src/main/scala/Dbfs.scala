@@ -91,6 +91,18 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[List[FileInfo]](resp)
   }
 
+  /**
+    * Creates DBFS directory and all necessary parent directories.
+    * It forms a list of directory names starting from the root directory. If any name contains
+    * unsupported characters by underlying FS , it throws [[InvalidParameterValue]]
+    * After that it iterates over the list and checks the file status of each element, and:
+    * - If a directory doesn't exists, it is created.
+    * - If there is a file with the same name, the [[ResourceAlreadyExists]] exception
+    *     is thrown in that case
+    * @param path - absolute path to new DBFS directory.
+    * @throws ResourceAlreadyExists
+    * @throws InvalidParameterValue
+    */
   def mkdirs(path: String): Unit = {
     val resp = client.req(s"$path/mkdirs", "post",
       s"""{"path":"$path"}"""

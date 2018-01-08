@@ -21,3 +21,6 @@ class HttpException(statusCode: Long, msg: Option[String]) extends Exception
   * @param error - unique string identified the error
   */
 class BricksException(error: String) extends Exception
+
+class ResourceAlreadyExists extends BricksException("RESOURCE_ALREADY_EXISTS")
+class InvalidParameterValue extends BricksException("INVALID_PARAMETER_VALUE")
