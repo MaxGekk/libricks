@@ -99,9 +99,10 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * - If a directory doesn't exists, it is created.
     * - If there is a file with the same name, the [[ResourceAlreadyExists]] exception
     *     is thrown in that case
+    *
     * @param path - absolute path to new DBFS directory.
-    * @throws ResourceAlreadyExists
-    * @throws InvalidParameterValue
+    * @throws ResourceAlreadyExists if directory (parent directory) already exists
+    * @throws InvalidParameterValue wrong path
     */
   def mkdirs(path: String): Unit = {
     val resp = client.req(s"$path/mkdirs", "post",
@@ -110,6 +111,19 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[Unit](resp)
   }
 
+  /**
+    * Moves (renames) a files/directory in DBFS
+    *
+    * @param src - existing source path of a files (directory). If the path doesn't exists,
+    *            the method throws [[ResourceDoesNotExists]] or [[InvalidParameterValue]] if
+    *            the path has wrong format.
+    * @param dst - non-existing destination path. If the path exists, the method throws
+    *            [[ResourceAlreadyExists]] or [[InvalidParameterValue]] in the case of wrong path.
+    * @throws InvalidParameterValue if dst or src path has wrong format
+    * @throws ResourceAlreadyExists if destination file exists
+    * @throws ResourceDoesNotExists if source file doesn't exists
+    * @throws InternalError unable to rename file or directory.
+    */
   def move(src: String, dst: String): Unit = {
     val resp = client.req(s"$path/move", "post",
       s"""{"source_path":"$src", "destination_path":"$dst"}"""

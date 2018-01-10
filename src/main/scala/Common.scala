@@ -22,5 +22,7 @@ class HttpException(statusCode: Long, msg: Option[String]) extends Exception
   */
 class BricksException(error: String) extends Exception
 
+class InternalError extends BricksException("INTERNAL_ERROR")
 class ResourceAlreadyExists extends BricksException("RESOURCE_ALREADY_EXISTS")
+class ResourceDoesNotExists extends BricksException("RESOURCE_DOES_NOT_EXIST")
 class InvalidParameterValue extends BricksException("INVALID_PARAMETER_VALUE")
