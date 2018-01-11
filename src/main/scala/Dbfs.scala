@@ -70,6 +70,16 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[ReadBlock](resp)
   }
 
+  /**
+    * Deletes a files or a directory in DBFS
+    *
+    * @param path - absolute path to the file or directory
+    * @param recursive - if it is true, delete all sub-directories of the path.
+    *                  Deleting empty directories can be done without providing the recursive flag.
+    * @throws InvalidParameterValue if the path has wrong format not supported by underlying FS
+    * @throws IOError if the path is a non-empty directory and recursive is set to false
+    *                 or on other similar errors.
+    */
   def delete(path: String, recursive: Boolean): Unit = {
     val resp = client.req(s"$path/delete", "post",
       s"""{"path": "$path", "recursive": ${recursive.toString}}"""
