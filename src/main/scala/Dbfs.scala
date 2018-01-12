@@ -87,6 +87,14 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[Unit](resp)
   }
 
+  /**
+    * Gets the file information of a file or directory.
+    *
+    * @param path - relative or absolute path to a file or a directory
+    * @return Attributes of the file. See [[FileInfo]].
+    *         If the path is a relative path, [[FileInfo]] will have the relative path too.
+    * @throws ResourceDoesNotExists If the file or directory does not exist
+    */
   def getStatus(path: String): FileInfo = {
     val resp = client.req(s"$path/get-status", "get",
       s"""{"path":"$path"}"""
@@ -94,6 +102,16 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[FileInfo](resp)
   }
 
+  /**
+    * Lists the contents of a directory, or details of the file. If the path points
+    * to a directory, the method lists all sub-directories recursively.
+    * The method doesn't guaranties order of [[FileInfo]]s in the returned list.
+    *
+    * @param path - relative or absolute path to a file or a directory
+    * @return all [[FileInfo]]s which are within the given directory. If the path refers
+    *         to a file, this will return a single-element list containing that file's FileInfo.
+    * @throws ResourceDoesNotExists If the file or directory does not exist
+    */
   def list(path: String): List[FileInfo] = {
     val resp = client.req(s"$path/list", "get",
       s"""{"path":"$path"}"""
