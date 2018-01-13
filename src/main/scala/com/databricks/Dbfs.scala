@@ -51,8 +51,20 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[Unit](resp)
   }
 
-  def read(path: String, offset: Long, length: Long): Block = {
-    val resp = client.req(s"$path/get-status", "get",
+  /**
+    * Reads the contents of a file
+    *
+    * @param path - the absolute path of the file to read
+    * @param offset - the offset to read from in bytes
+    * @param length - the number of bytes to read starting from the offset.
+    * @return a tuple of base64 encoded content of the file and number of bytes read
+    *         in un-encoded content. It could be less than the length if we hit end of the file
+    * @throws ResourceDoesNotExists If the file does not exist
+    * @throws InvalidParameterValue If the offset is negative
+    * @throws MaxReadSizeExceeded If the read length exceeds 1 MB
+    */
+  def read(path: String, offset: Long, length: Long): ReadBlock = {
+    val resp = client.req(s"$path/read", "get",
       s"""
          | {
          |   "path": "$path",
