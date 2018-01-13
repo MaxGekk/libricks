@@ -11,9 +11,9 @@ case class FileInfo(path: String, is_dir: Boolean, file_size: Long)
 /**
   * The identifier should be passed into the [[Dbfs.addBlock]] and [[Dbfs.close]] calls
   * when writing to a file through a stream.
-  * @param id - unique stream identifier
+  * @param handle - unique stream handle
   */
-case class StreamId(id: Long)
+case class StreamId(handle: Long)
 
 /**
   * Access point for Databricks DBFS Rest API
@@ -31,7 +31,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @return the identifier of an open stream. It should subsequently be passed into
     *         the addBlock() and close() calls.
     * @throws ResourceAlreadyExists if a file or directory already exists at the input path
-    * @throws InvalidParameterValue if the path of a directory or the file cannot be read
+    * @throws InvalidParameterValue if the path of a directory or the file cannot be written
     */
   def create(path: String, overwrite: Boolean): StreamId = {
     val resp = client.req(s"$path/create", "post",
@@ -40,21 +40,46 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[StreamId](resp)
   }
 
-  def addBlock(handle: StreamId, data: Block): Unit = {
+  /**
+    * Appends a block of data to the stream specified by the input id.
+    *
+    * @param id - the identifier of an open stream
+    * @param data - the data to append to the stream
+    * @throws MaxReadSizeExceeded If the data exceeded max size 1 MB
+    * @throws ResourceDoesNotExists If there is no such stream with the identifier
+    * @throws InvalidState Could not acquire the output stream at this time since
+    *                      it is currently in use.
+    */
+  def addBlock(id: StreamId, data: Block): Unit = {
     val resp = client.req(s"$path/add-block", "post",
-      s"""{"handle": ${handle.id}, "data": "${data.base64}"}"""
+      s"""{"handle": ${id.handle}, "data": "${data.base64}"}"""
     )
     client.extract[Unit](resp)
   }
 
-  def close(handle: StreamId): Unit = {
+  /**
+    * Closes an open stream
+    *
+    * @param id - the identifier of the open stream
+    * @throws ResourceDoesNotExists if id is not valid or the stream does not exist already
+    */
+  def close(id: StreamId): Unit = {
     val resp = client.req(s"$path/close", "post",
-      s"""{"path": ${handle.id}}"""
+      s"""{"path": ${id.handle}}"""
     )
     client.extract[Unit](resp)
   }
 
-  def put(path: String, contents: Block, overwrite: Boolean) = {
+  /**
+    * Creates a file in DBFS and puts the content to the created file
+    *
+    * @param path - the absolute path to a file in DBFS
+    * @param contents - the data to write to the file
+    * @param overwrite - the flag that specifies whether to overwrite existing file
+    * @throws MaxReadSizeExceeded the contents exceeded maxim size of 1 MB
+    * @throws InvalidParameterValue if the path of a directory or the file cannot be written
+    */
+  def put(path: String, contents: Block, overwrite: Boolean): Unit = {
     val resp = client.req(s"$path/put", "post",
       s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
     )
