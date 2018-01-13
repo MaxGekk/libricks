@@ -23,6 +23,16 @@ class Dbfs(client: ShardClient) extends Endpoint {
   /** Common suffix of paths to token endpoints */
   override def path: String = client.path + "/2.0/dbfs"
 
+  /**
+    * Opens a stream to write to a file and returns an identifier of this stream.
+    *
+    * @param path - the absolute path to a file in DBFS
+    * @param overwrite - the flag that specifies whether to overwrite existing file.
+    * @return the identifier of an open stream. It should subsequently be passed into
+    *         the addBlock() and close() calls.
+    * @throws ResourceAlreadyExists if a file or directory already exists at the input path
+    * @throws InvalidParameterValue if the path of a directory or the file cannot be read
+    */
   def create(path: String, overwrite: Boolean): StreamId = {
     val resp = client.req(s"$path/create", "post",
       s"""{"path": "$path", "overwrite": ${overwrite.toString}}"""
@@ -60,7 +70,8 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @return a tuple of base64 encoded content of the file and number of bytes read
     *         in un-encoded content. It could be less than the length if we hit end of the file
     * @throws ResourceDoesNotExists If the file does not exist
-    * @throws InvalidParameterValue If the offset is negative
+    * @throws InvalidParameterValue If the offset or length is negative
+    * @throws InvalidParameterValue If the path of a directory
     * @throws MaxReadSizeExceeded If the read length exceeds 1 MB
     */
   def read(path: String, offset: Long, length: Long): ReadBlock = {
