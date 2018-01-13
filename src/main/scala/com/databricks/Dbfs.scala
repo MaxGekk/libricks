@@ -30,10 +30,6 @@ class Dbfs(client: ShardClient) extends Endpoint {
     client.extract[StreamId](resp)
   }
 
-  trait Block {
-    def base64: String
-  }
-
   def addBlock(handle: StreamId, data: Block): Unit = {
     val resp = client.req(s"$path/add-block", "post",
       s"""{"handle": ${handle.id}, "data": "${data.base64}"}"""
@@ -53,10 +49,6 @@ class Dbfs(client: ShardClient) extends Endpoint {
       s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
     )
     client.extract[Unit](resp)
-  }
-
-  case class ReadBlock(bytes_read: Long, data: String) extends Block {
-    override def base64 = data
   }
 
   def read(path: String, offset: Long, length: Long): Block = {
