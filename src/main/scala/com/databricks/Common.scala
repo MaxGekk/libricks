@@ -1,3 +1,5 @@
+package com.databricks
+
 /**
   * Interface of REST API endpoint
   */

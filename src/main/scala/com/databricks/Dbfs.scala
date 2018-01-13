@@ -1,3 +1,5 @@
+package com.databricks
+
 /**
   * Attributes of a file or a directory
   * @param path - full path to a file or a directory

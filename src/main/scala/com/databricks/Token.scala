@@ -1,3 +1,5 @@
+package com.databricks
+
 import org.json4s._
 
 /**

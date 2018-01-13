@@ -1,3 +1,5 @@
+package com.databricks
+
 import com.typesafe.config.ConfigFactory
 
 object BricksApp {

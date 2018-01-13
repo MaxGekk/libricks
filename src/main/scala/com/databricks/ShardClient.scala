@@ -1,3 +1,5 @@
+package com.databricks
+
 import java.net.URI
 import org.apache.http.client.HttpClient
 import org.apache.http.entity.StringEntity
