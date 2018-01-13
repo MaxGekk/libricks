@@ -11,23 +11,28 @@ trait Endpoint {
   def path: String
 }
 
-/**
-  * The exception is thrown if status code of http response isn't 200
-  * @param statusCode - http status code
-  * @param msg - message entity of error response
-  */
-class HttpException(statusCode: Long, msg: Option[String]) extends Exception
 
 /**
   * The error returned by Databricks server
   * @param error - unique string identified the error
+  * @param msg - reason of the error
   */
-class BricksException(error: String) extends Exception
+class BricksException(error_code: String, message: String) {
+  def throwException = error_code match {
+    case "INTERNAL_ERROR" => throw new InternalError(message)
+    case "RESOURCE_ALREADY_EXISTS" => throw new ResourceAlreadyExists(message)
+    case "RESOURCE_DOES_NOT_EXIST" => throw new ResourceDoesNotExists(message)
+    case "INVALID_PARAMETER_VALUE" => throw new InvalidParameterValue(message)
+    case "IO_ERROR" => throw new IOError(message)
+    case "MAX_READ_SIZE_EXCEEDED" => throw new MaxReadSizeExceeded(message)
+    case "INVALID_STATE" => throw new InvalidState(message)
+  }
+}
 
-class InternalError extends BricksException("INTERNAL_ERROR")
-class ResourceAlreadyExists extends BricksException("RESOURCE_ALREADY_EXISTS")
-class ResourceDoesNotExists extends BricksException("RESOURCE_DOES_NOT_EXIST")
-class InvalidParameterValue extends BricksException("INVALID_PARAMETER_VALUE")
-class IOError extends BricksException("IO_ERROR")
-class MaxReadSizeExceeded extends BricksException("MAX_READ_SIZE_EXCEEDED")
-class InvalidState extends BricksException("INVALID_STATE")
+class InternalError(msg: String) extends Exception
+class ResourceAlreadyExists(msg: String) extends Exception
+class ResourceDoesNotExists(msg: String) extends Exception
+class InvalidParameterValue(msg: String) extends Exception
+class IOError(msg: String) extends Exception
+class MaxReadSizeExceeded(msg: String) extends Exception
+class InvalidState(msg: String) extends Exception

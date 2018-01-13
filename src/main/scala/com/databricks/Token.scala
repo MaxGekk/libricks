@@ -81,7 +81,7 @@ class Token(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$path/delete", "post",
       s"""{"token_id":"$token_id"}"""
     )
-    client.extract[Unit](resp)
+    client.extract[JObject](resp)
   }
 
   /**

@@ -13,6 +13,8 @@ import org.json4s.jackson.JsonMethods._
   * @param shard - url of the shard like https://my-shard.cloud.databricks.com:443
   */
 case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
+  private implicit val formats = DefaultFormats
+
   /** Common suffix of all endpoints of Databricks public API */
   override def path: String = shard + "/api"
 
@@ -25,7 +27,7 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
     * @param endpoint - url like https://my-shard.cloud.databricks.com:443/api/2.0/token/list
     * @param httpMethod - "get" or "post"
     * @param data - entity of the https request. For example, in json format: {"token_id": 42}
-    * @return a string with json if http status is 200 otherwise throws [[HttpException]]
+    * @return a string with json if http status is 200 otherwise throws an exception
     */
   def req(endpoint: String, httpMethod: String, data: String = ""): String = {
     val request = httpMethod.toUpperCase match {
@@ -39,28 +41,17 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
     request.setEntity(new StringEntity(data))
 
     val response = client.execute(request)
-
     val statusCode = response.getStatusLine.getStatusCode
-    if (statusCode == 200) {
-      val handler = new org.apache.http.impl.client.BasicResponseHandler()
-      val responseJson = handler.handleResponse(response)
-      responseJson
-    } else {
-      val msg = response.getEntity match {
-        case null => None
-        case entity => Some(EntityUtils.toString(entity))
-      }
-      throw new HttpException(statusCode, msg)
-    }
-  }
+    val body = EntityUtils.toString(response.getEntity)
 
-  private implicit val formats = DefaultFormats
+    if (statusCode != 200)
+      parse(body).extract[BricksException].throwException
+
+    body
+  }
 
   def extract[A](json: String)(implicit mf: scala.reflect.Manifest[A]): A = {
     val parsed = parse(json)
-    parsed.extractOrElse[A] {
-      val error = parsed.extract[String]
-      throw new BricksException(error)
-    }
+    parsed.extract[A]
   }
 }
