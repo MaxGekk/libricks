@@ -21,7 +21,7 @@ class Shard extends Endpoint {
     this
   }
 
-  override def path: String = options("shard")
+  override def url: String = options("shard")
 
   def shard(value: String) = config("shard", value)
   def username(value: String) = config("username", value)

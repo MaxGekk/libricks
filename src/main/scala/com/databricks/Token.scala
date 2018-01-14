@@ -54,7 +54,7 @@ case class TokenList(token_infos: List[TokenInfo])
 class Token(client: ShardClient) extends Endpoint {
   private implicit val formats = DefaultFormats
   /** Common suffix of paths to token endpoints */
-  override def path: String = client.path + "/2.0/token"
+  override def url: String = client.url + "/2.0/token"
 
   /**
     * Creates new token in the shard if the feature was enabled by Databricks Admin:
@@ -67,7 +67,7 @@ class Token(client: ShardClient) extends Endpoint {
     * @throws QuotaExceeded if the user exceeds their token quota.
     */
   def create(lifetimeInSec: Long, comment: String): NewToken = {
-    val resp = client.req(s"$path/create", "post",
+    val resp = client.req(s"$url/create", "post",
       s"""{"lifetime_seconds": ${lifetimeInSec},"comment": "${comment}"}"""
     )
     client.extract[NewToken](resp)
@@ -80,7 +80,7 @@ class Token(client: ShardClient) extends Endpoint {
     * @throws ResourceDoesNotExists No valid token with the given ID found.
     */
   def delete(token_id: String): Unit = {
-    val resp = client.req(s"$path/delete", "post",
+    val resp = client.req(s"$url/delete", "post",
       s"""{"token_id":"$token_id"}"""
     )
     client.extract[JObject](resp)
@@ -93,7 +93,7 @@ class Token(client: ShardClient) extends Endpoint {
     * @throws EndpointNotFound if the feature flag is disabled
     */
   def list: List[TokenInfo] = {
-    val resp = client.req(s"$path/list", "get")
+    val resp = client.req(s"$url/list", "get")
     client.extract[TokenList](resp).token_infos
   }
 }

@@ -8,7 +8,7 @@ trait Endpoint {
     * Suffix of full path to an endpoint. For instance:
     * https://shardname.cloud.databricks.com:443/api/2.0/token/create
     */
-  def path: String
+  def url: String
 }
 
 class HttpException(statusCode: Long) extends Exception

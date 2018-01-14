@@ -16,10 +16,12 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
   private implicit val formats = DefaultFormats
 
   /** Common suffix of all endpoints of Databricks public API */
-  override def path: String = shard + "/api"
+  override def url: String = shard + "/api"
 
   /** Entry point for Databricks Token API like create and delete a token. */
   lazy val token = new Token(this)
+  /** Entry point for Databricks Dbfs API. */
+  lazy val dbfs = new Dbfs(this)
 
   /**
     * Makes a REST request to specific endpoint

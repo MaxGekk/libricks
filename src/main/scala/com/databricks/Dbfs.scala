@@ -1,7 +1,10 @@
 package com.databricks
 
+import org.json4s.JObject
+
 /**
   * Attributes of a file or a directory
+  *
   * @param path - full path to a file or a directory
   * @param is_dir - true if the path is directory otherwise false
   * @param file_size - the length of the file in bytes or 0 if the path is a directory
@@ -21,7 +24,7 @@ case class StreamId(handle: Long)
   */
 class Dbfs(client: ShardClient) extends Endpoint {
   /** Common suffix of paths to token endpoints */
-  override def path: String = client.path + "/2.0/dbfs"
+  override def url: String = client.url + "/2.0/dbfs"
 
   /**
     * Opens a stream to write to a file and returns an identifier of this stream.
@@ -34,7 +37,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws InvalidParameterValue if the path of a directory or the file cannot be written
     */
   def create(path: String, overwrite: Boolean): StreamId = {
-    val resp = client.req(s"$path/create", "post",
+    val resp = client.req(s"$url/create", "post",
       s"""{"path": "$path", "overwrite": ${overwrite.toString}}"""
     )
     client.extract[StreamId](resp)
@@ -51,7 +54,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     *                      it is currently in use.
     */
   def addBlock(id: StreamId, data: Block): Unit = {
-    val resp = client.req(s"$path/add-block", "post",
+    val resp = client.req(s"$url/add-block", "post",
       s"""{"handle": ${id.handle}, "data": "${data.base64}"}"""
     )
     client.extract[Unit](resp)
@@ -64,7 +67,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws ResourceDoesNotExists if id is not valid or the stream does not exist already
     */
   def close(id: StreamId): Unit = {
-    val resp = client.req(s"$path/close", "post",
+    val resp = client.req(s"$url/close", "post",
       s"""{"path": ${id.handle}}"""
     )
     client.extract[Unit](resp)
@@ -80,7 +83,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws InvalidParameterValue if the path of a directory or the file cannot be written
     */
   def put(path: String, contents: Block, overwrite: Boolean): Unit = {
-    val resp = client.req(s"$path/put", "post",
+    val resp = client.req(s"$url/put", "post",
       s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
     )
     client.extract[Unit](resp)
@@ -100,7 +103,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws MaxReadSizeExceeded If the read length exceeds 1 MB
     */
   def read(path: String, offset: Long, length: Long): ReadBlock = {
-    val resp = client.req(s"$path/read", "get",
+    val resp = client.req(s"$url/read", "get",
       s"""
          | {
          |   "path": "$path",
@@ -123,10 +126,10 @@ class Dbfs(client: ShardClient) extends Endpoint {
     *                 or on other similar errors.
     */
   def delete(path: String, recursive: Boolean): Unit = {
-    val resp = client.req(s"$path/delete", "post",
+    val resp = client.req(s"$url/delete", "post",
       s"""{"path": "$path", "recursive": ${recursive.toString}}"""
     )
-    client.extract[Unit](resp)
+    client.extract[JObject](resp)
   }
 
   /**
@@ -138,7 +141,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws ResourceDoesNotExists If the file or directory does not exist
     */
   def getStatus(path: String): FileInfo = {
-    val resp = client.req(s"$path/get-status", "get",
+    val resp = client.req(s"$url/get-status", "get",
       s"""{"path":"$path"}"""
     )
     client.extract[FileInfo](resp)
@@ -155,7 +158,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws ResourceDoesNotExists If the file or directory does not exist
     */
   def list(path: String): List[FileInfo] = {
-    val resp = client.req(s"$path/list", "get",
+    val resp = client.req(s"$url/list", "get",
       s"""{"path":"$path"}"""
     )
     client.extract[List[FileInfo]](resp)
@@ -175,10 +178,10 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws InvalidParameterValue wrong path
     */
   def mkdirs(path: String): Unit = {
-    val resp = client.req(s"$path/mkdirs", "post",
+    val resp = client.req(s"$url/mkdirs", "post",
       s"""{"path":"$path"}"""
     )
-    client.extract[Unit](resp)
+    client.extract[JObject](resp)
   }
 
   /**
@@ -195,9 +198,9 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws InternalError unable to rename file or directory.
     */
   def move(src: String, dst: String): Unit = {
-    val resp = client.req(s"$path/move", "post",
+    val resp = client.req(s"$url/move", "post",
       s"""{"source_path":"$src", "destination_path":"$dst"}"""
     )
-    client.extract[Unit](resp)
+    client.extract[JObject](resp)
   }
 }
