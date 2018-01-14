@@ -19,6 +19,12 @@ case class FileInfo(path: String, is_dir: Boolean, file_size: Long)
 case class StreamId(handle: Long)
 
 /**
+  * The list of [[FileInfo]]s of some directory returned by the [[Dbfs.list()]] method
+  * @param files - information about files or/and directories
+  */
+case class FileList(files: List[FileInfo])
+
+/**
   * Access point for Databricks DBFS Rest API
   * @param client - connection settings to user's shard
   */
@@ -57,7 +63,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/add-block", "post",
       s"""{"handle": ${id.handle}, "data": "${data.base64}"}"""
     )
-    client.extract[Unit](resp)
+    client.extract[JObject](resp)
   }
 
   /**
@@ -68,9 +74,9 @@ class Dbfs(client: ShardClient) extends Endpoint {
     */
   def close(id: StreamId): Unit = {
     val resp = client.req(s"$url/close", "post",
-      s"""{"path": ${id.handle}}"""
+      s"""{"handle": ${id.handle}}"""
     )
-    client.extract[Unit](resp)
+    client.extract[JObject](resp)
   }
 
   /**
@@ -86,7 +92,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/put", "post",
       s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
     )
-    client.extract[Unit](resp)
+    client.extract[JObject](resp)
   }
 
   /**
@@ -161,7 +167,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/list", "get",
       s"""{"path":"$path"}"""
     )
-    client.extract[List[FileInfo]](resp)
+    client.extract[FileList](resp).files
   }
 
   /**
