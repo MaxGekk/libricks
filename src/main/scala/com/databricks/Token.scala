@@ -64,6 +64,7 @@ class Token(client: ShardClient) extends Endpoint {
     * @param comment - comment associated with the new token.
     * @return [[NewToken]] - a pair of token value + its meta-info [[TokenInfo]].
     *        The token value should be used for authentication at Databricks services.
+    * @throws QuotaExceeded if the user exceeds their token quota.
     */
   def create(lifetimeInSec: Long, comment: String): NewToken = {
     val resp = client.req(s"$path/create", "post",
@@ -76,6 +77,7 @@ class Token(client: ShardClient) extends Endpoint {
     * Deletes (un-registered) a token by its id
     * @param token_id - token identifier returned in [[TokenInfo]]
     * @return true - if the token was removed successfully otherwise false
+    * @throws ResourceDoesNotExists No valid token with the given ID found.
     */
   def delete(token_id: String): Unit = {
     val resp = client.req(s"$path/delete", "post",
@@ -88,6 +90,7 @@ class Token(client: ShardClient) extends Endpoint {
     * Lists all active access token for given shard and user
     * @return a list of [[TokenInfo]]. It doesn't contain token value
     *         which could be used for authentication
+    * @throws EndpointNotFound if the feature flag is disabled
     */
   def list: List[TokenInfo] = {
     val resp = client.req(s"$path/list", "get")

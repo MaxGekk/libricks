@@ -7,7 +7,7 @@ import org.scalatest._
 
 class TokenTests extends FlatSpec with Matchers with BeforeAndAfter {
   var shard: ShardClient = _
-  val lifeTimeInSec: Long = 5*60
+  val lifeTimeInSec: Long = 60
   val now = Calendar.getInstance().getTime().toString
 
   before {
@@ -21,7 +21,7 @@ class TokenTests extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   it should "throws ResourceDoesNotExists on deleting of wrong token id" in {
-    intercept[ResourceDoesNotExists] {
+    a [ResourceDoesNotExists] should be thrownBy {
       shard.token.delete("12345678")
     }
   }

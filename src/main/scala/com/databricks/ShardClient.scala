@@ -42,12 +42,14 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
 
     val response = client.execute(request)
     val statusCode = response.getStatusLine.getStatusCode
-    val body = EntityUtils.toString(response.getEntity)
 
-    if (statusCode != 200)
-      parse(body).extract[BricksException].throwException
-
-    body
+    statusCode match {
+      case 200 => EntityUtils.toString(response.getEntity)
+      case 400 =>
+        val body = EntityUtils.toString(response.getEntity)
+        parse(body).extract[BricksException].throwException
+      case _ => throw new HttpException(statusCode)
+    }
   }
 
   def extract[A](json: String)(implicit mf: scala.reflect.Manifest[A]): A = {

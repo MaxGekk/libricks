@@ -11,11 +11,12 @@ trait Endpoint {
   def path: String
 }
 
+class HttpException(statusCode: Long) extends Exception
 
 /**
   * The error returned by Databricks server
-  * @param error - unique string identified the error
-  * @param msg - reason of the error
+  * @param error_code - unique string identified the error
+  * @param message - reason of the error
   */
 class BricksException(error_code: String, message: String) {
   def throwException = error_code match {
@@ -26,6 +27,8 @@ class BricksException(error_code: String, message: String) {
     case "IO_ERROR" => throw new IOError(message)
     case "MAX_READ_SIZE_EXCEEDED" => throw new MaxReadSizeExceeded(message)
     case "INVALID_STATE" => throw new InvalidState(message)
+    case "ENDPOINT_NOT_FOUND" => throw new EndpointNotFound(message)
+    case "QUOTA_EXCEEDED" => throw new QuotaExceeded(message)
   }
 }
 
@@ -36,3 +39,5 @@ class InvalidParameterValue(msg: String) extends Exception
 class IOError(msg: String) extends Exception
 class MaxReadSizeExceeded(msg: String) extends Exception
 class InvalidState(msg: String) extends Exception
+class EndpointNotFound(msg: String) extends Exception
+class QuotaExceeded(msg: String) extends Exception
