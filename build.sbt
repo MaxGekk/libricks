@@ -1,8 +1,10 @@
-name := "libbricks"
+name := "libricks"
 
 version := "0.1"
 
 scalaVersion := "2.12.4"
+
+licenses += ("Apache-2.0", url("https://opensource.org/licenses/apache-2.0"))
 
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.2",
