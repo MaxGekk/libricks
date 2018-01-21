@@ -19,7 +19,7 @@ case class FileInfo(path: String, is_dir: Boolean, file_size: Long)
 case class StreamId(handle: Long)
 
 /**
-  * The list of [[FileInfo]]s of some directory returned by the [[Dbfs.list()]] method
+  * The list of [[FileInfo]]s of some directory returned by the [[Dbfs.list]] method
   * @param files - information about files or/and directories
   */
 case class FileList(files: List[FileInfo])

@@ -10,8 +10,8 @@ import org.json4s._
   *                      measured in milliseconds, between the current time and midnight,
   *                      January 1, 1970 UTC.
   * @param expiry_time - creation_time + 1000 * lifetimeInSec where lifetimeInSec is
-  *                    a parameter passed into [[Token.create()]]
-  * @param comment - a comment passed into [[Token.create()]]
+  *                    a parameter passed into [[Token.create]]
+  * @param comment - a comment passed into [[Token.create]]
   */
 case class TokenInfo(token_id: String,
                      creation_time: Long,
