@@ -42,6 +42,8 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws ResourceAlreadyExists if a file or directory already exists at the input path
     * @throws InvalidParameterValue if the path of a directory or the file cannot be written
     */
+  @throws(classOf[ResourceAlreadyExists])
+  @throws(classOf[InvalidParameterValue])
   def create(path: String, overwrite: Boolean): StreamId = {
     val resp = client.req(s"$url/create", "post",
       s"""{"path": "$path", "overwrite": ${overwrite.toString}}"""
@@ -59,6 +61,9 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws InvalidState Could not acquire the output stream at this time since
     *                      it is currently in use.
     */
+  @throws(classOf[MaxReadSizeExceeded])
+  @throws(classOf[ResourceDoesNotExists])
+  @throws(classOf[InvalidState])
   def addBlock(id: StreamId, data: Block): Unit = {
     val resp = client.req(s"$url/add-block", "post",
       s"""{"handle": ${id.handle}, "data": "${data.base64}"}"""
@@ -72,6 +77,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @param id - the identifier of the open stream
     * @throws ResourceDoesNotExists if id is not valid or the stream does not exist already
     */
+  @throws(classOf[ResourceDoesNotExists])
   def close(id: StreamId): Unit = {
     val resp = client.req(s"$url/close", "post",
       s"""{"handle": ${id.handle}}"""
@@ -88,6 +94,8 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws MaxReadSizeExceeded the contents exceeded maxim size of 1 MB
     * @throws InvalidParameterValue if the path of a directory or the file cannot be written
     */
+  @throws(classOf[MaxReadSizeExceeded])
+  @throws(classOf[InvalidParameterValue])
   def put(path: String, contents: Block, overwrite: Boolean): Unit = {
     val resp = client.req(s"$url/put", "post",
       s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
@@ -104,10 +112,12 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @return a tuple of base64 encoded content of the file and number of bytes read
     *         in un-encoded content. It could be less than the length if we hit end of the file
     * @throws ResourceDoesNotExists If the file does not exist
-    * @throws InvalidParameterValue If the offset or length is negative
-    * @throws InvalidParameterValue If the path of a directory
+    * @throws InvalidParameterValue If the offset or length is negative, or the path is a directory
     * @throws MaxReadSizeExceeded If the read length exceeds 1 MB
     */
+  @throws(classOf[ResourceDoesNotExists])
+  @throws(classOf[InvalidParameterValue])
+  @throws(classOf[MaxReadSizeExceeded])
   def read(path: String, offset: Long, length: Long): ReadBlock = {
     val resp = client.req(s"$url/read", "get",
       s"""
@@ -131,6 +141,8 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws IOError if the path is a non-empty directory and recursive is set to false
     *                 or on other similar errors.
     */
+  @throws(classOf[InvalidParameterValue])
+  @throws(classOf[IOError])
   def delete(path: String, recursive: Boolean): Unit = {
     val resp = client.req(s"$url/delete", "post",
       s"""{"path": "$path", "recursive": ${recursive.toString}}"""
@@ -146,6 +158,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     *         If the path is a relative path, [[FileInfo]] will have the relative path too.
     * @throws ResourceDoesNotExists If the file or directory does not exist
     */
+  @throws(classOf[ResourceDoesNotExists])
   def getStatus(path: String): FileInfo = {
     val resp = client.req(s"$url/get-status", "get",
       s"""{"path":"$path"}"""
@@ -163,6 +176,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     *         to a file, this will return a single-element list containing that file's FileInfo.
     * @throws ResourceDoesNotExists If the file or directory does not exist
     */
+  @throws(classOf[ResourceDoesNotExists])
   def list(path: String): List[FileInfo] = {
     val resp = client.req(s"$url/list", "get",
       s"""{"path":"$path"}"""
@@ -183,6 +197,8 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws ResourceAlreadyExists if directory (parent directory) already exists
     * @throws InvalidParameterValue wrong path
     */
+  @throws(classOf[ResourceAlreadyExists])
+  @throws(classOf[InvalidParameterValue])
   def mkdirs(path: String): Unit = {
     val resp = client.req(s"$url/mkdirs", "post",
       s"""{"path":"$path"}"""
@@ -203,6 +219,10 @@ class Dbfs(client: ShardClient) extends Endpoint {
     * @throws ResourceDoesNotExists if source file doesn't exists
     * @throws InternalError unable to rename file or directory.
     */
+  @throws(classOf[InvalidParameterValue])
+  @throws(classOf[ResourceAlreadyExists])
+  @throws(classOf[ResourceDoesNotExists])
+  @throws(classOf[InternalError])
   def move(src: String, dst: String): Unit = {
     val resp = client.req(s"$url/move", "post",
       s"""{"source_path":"$src", "destination_path":"$dst"}"""
