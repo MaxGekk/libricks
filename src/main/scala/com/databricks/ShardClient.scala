@@ -16,7 +16,11 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
   private implicit val formats = DefaultFormats
 
   /** Common suffix of all endpoints of Databricks public API */
-  override def url: String = shard + "/api"
+  override lazy val url: String = {
+    val https = "https://"
+    val withProtocol = if (shard.startsWith(https)) shard else https + shard
+    withProtocol + "/api"
+  }
 
   /** Entry point for Databricks Token API like create and delete a token. */
   lazy val token = new Token(this)
