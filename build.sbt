@@ -14,3 +14,8 @@ libraryDependencies ++= Seq(
 )
 
 bintrayPackageLabels := Seq("databricks", "rest", "dbfs", "scala")
+
+enablePlugins(AssemblyPlugin)
+
+mainClass in assembly := Some("com.databricks.Libricks")
+assemblyJarName in assembly := s"${name.value}-${version.value}.jar"
