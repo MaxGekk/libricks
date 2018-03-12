@@ -26,6 +26,8 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
   lazy val token = new Token(this)
   /** Entry point for Databricks Dbfs API. */
   lazy val dbfs = new Dbfs(this)
+  /** An extension of DBFS API */
+  lazy val fs = new Fs(this)
 
   /**
     * Makes a REST request to specific endpoint
