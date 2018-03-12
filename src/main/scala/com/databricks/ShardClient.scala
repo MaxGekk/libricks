@@ -22,12 +22,21 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
     withProtocol + "/api"
   }
 
-  /** Entry point for Databricks Token API like create and delete a token. */
+  /** Entry point for Databricks Token API like create and delete a token:
+   * https://docs.databricks.com/api/latest/tokens.html */
   lazy val token = new Token(this)
-  /** Entry point for Databricks Dbfs API. */
+  /**
+   * Entry point for Databricks Dbfs API:
+   * https://docs.databricks.com/api/latest/dbfs.html
+   * */
   lazy val dbfs = new Dbfs(this)
   /** An extension of DBFS API */
   lazy val fs = new Fs(this)
+  /**
+   * Entry point of Library API:
+   * https://docs.databricks.com/api/latest/libraries.html#library-api
+   * */
+  lazy val lib = new Libraries(this)
 
   /**
     * Makes a REST request to specific endpoint

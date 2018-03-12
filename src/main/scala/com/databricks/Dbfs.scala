@@ -29,7 +29,7 @@ case class FileList(files: List[FileInfo])
   * @param client - connection settings to user's shard
   */
 class Dbfs(client: ShardClient) extends Endpoint {
-  /** Common suffix of paths to token endpoints */
+  /** Common suffix of paths to dbfs endpoints */
   override def url: String = client.url + "/2.0/dbfs"
 
   /**
