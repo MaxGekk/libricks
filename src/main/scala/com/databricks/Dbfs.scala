@@ -65,9 +65,10 @@ class Dbfs(client: ShardClient) extends Endpoint {
   @throws(classOf[ResourceDoesNotExists])
   @throws(classOf[InvalidState])
   def addBlock(id: StreamId, data: Block): Unit = {
-    val resp = client.req(s"$url/add-block", "post",
-      s"""{"handle": ${id.handle}, "data": "${data.base64}"}"""
-    )
+    val base64 = data.base64
+    val body = s"""{"handle": ${id.handle}, "data": "${base64}"}"""
+    val resp = client.req(s"$url/add-block", "post", body)
+
     client.extract[JObject](resp)
   }
 

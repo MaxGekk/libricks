@@ -1,5 +1,7 @@
 package com.databricks
 
+import java.nio.ByteBuffer
+
 import com.typesafe.config.ConfigFactory
 import org.scalatest._
 
@@ -53,7 +55,7 @@ class DbfsTests extends FlatSpec with Matchers with BeforeAndAfter {
     val data = Array[Byte](0, 1, 3, 4, 5)
 
     val id = shard.dbfs.create(testPath, true)
-    shard.dbfs.addBlock(id, WriteBlock(data))
+    shard.dbfs.addBlock(id, WriteBlock(ByteBuffer.wrap(data)))
     shard.dbfs.close(id)
 
     val info = shard.dbfs.getStatus(testPath)
