@@ -3,7 +3,7 @@ package com.databricks
 import java.util.Base64
 import java.nio.charset.StandardCharsets
 
-trait Block {
+sealed trait Block {
   def raw: Array[Byte]
   def str: String = new String(raw)
   def base64: String
@@ -19,6 +19,16 @@ case class ReadBlock(bytes_read: Long, data: String) extends Block {
     Base64.getDecoder.decode(data.getBytes(StandardCharsets.UTF_8))
   }
   override def base64 = data
+}
+
+/**
+ * A binary block to upload
+ * @param raw - array of byte that should be encoded to base64 and uploaded
+ */
+case class WriteBlock(raw: Array[Byte]) extends Block {
+  override def base64: String = {
+    Base64.getEncoder.encodeToString(raw)
+  }
 }
 
 case class StrBlock(override val str: String) extends Block {

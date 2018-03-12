@@ -37,7 +37,7 @@ class DbfsTests extends FlatSpec with Matchers with BeforeAndAfter {
     shard.dbfs.delete(newName, false)
   }
 
-  it should "stream a string to a file" in {
+  it should "stream a string to a text file" in {
     val s = "Hello, Dbfs!"
 
     val id = shard.dbfs.create(testPath, true)
@@ -46,6 +46,22 @@ class DbfsTests extends FlatSpec with Matchers with BeforeAndAfter {
 
     val info = shard.dbfs.getStatus(testPath)
     assert(info == FileInfo(testPath, false, s.length))
+    shard.dbfs.delete(testPath, false)
+  }
+
+  it should "stream a binary block to a file" in {
+    val data = Array[Byte](0, 1, 3, 4, 5)
+
+    val id = shard.dbfs.create(testPath, true)
+    shard.dbfs.addBlock(id, WriteBlock(data))
+    shard.dbfs.close(id)
+
+    val info = shard.dbfs.getStatus(testPath)
+    assert(info == FileInfo(testPath, false, data.length))
+
+    val readBlock = shard.dbfs.read(testPath, 0, 10)
+    readBlock.raw shouldBe data
+
     shard.dbfs.delete(testPath, false)
   }
 
