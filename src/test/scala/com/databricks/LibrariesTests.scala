@@ -23,4 +23,20 @@ class LibrariesTests extends FlatSpec with Matchers with BeforeAndAfter with Tes
 
     statuses.length shouldBe 0
   }
+
+  it should "install libricks.jar onto the cluster" in {
+    val jar = Jar("dbfs:/FileStore/libricks_0_3_SNAPSHOT.jar")
+    shard.lib.install(clusterId, List(jar))
+    val status = shard.lib.clusterStatus(clusterId)
+
+    status.exists(lib => lib.library == jar && lib.status == "INSTALLING")
+  }
+
+  it should "uninstall libricks.jar onto the cluster" in {
+    val jar = Jar("dbfs:/FileStore/libricks_0_3_SNAPSHOT.jar")
+    shard.lib.uninstall(clusterId, List(jar))
+    val status = shard.lib.clusterStatus(clusterId)
+
+    status.exists(lib => lib.library == jar && lib.status == "UNINSTALL_ON_RESTART")
+  }
 }

@@ -1,10 +1,11 @@
 package com.databricks
 
-sealed trait Library
-case class Jar(path: String) extends Library
+import org.json4s.JObject
+
+case class Jar(jar: String)
 
 case class LibraryFullStatus(
-  library: Library,
+  library: Jar,
   status: String,
   messages: Array[String],
   is_library_for_all_clusters: Boolean
@@ -23,12 +24,32 @@ class Libraries(client: ShardClient) extends Endpoint {
   /** Common suffix of paths to libraries endpoints */
   override def url: String = client.url + "/2.0/libraries"
 
-  def install(clusterId: String, libraries: Iterable[Library]): Unit = {
-    ???
+  def install(clusterId: String, libraries: List[Jar]): Unit = {
+    libraries foreach {lib =>
+      val resp = client.req(s"$url/install", "post",
+        s"""|{
+            |  "cluster_id":"$clusterId",
+            |  "libraries": [{
+            |    "jar": "${lib.jar}"
+            |  }]
+            |}""".stripMargin
+      )
+      client.extract[JObject](resp)
+    }
   }
 
-  def uninstall(clusterId: String, libraries: Iterable[Library]): Unit = {
-    ???
+  def uninstall(clusterId: String, libraries: List[Jar]): Unit = {
+    libraries foreach {lib =>
+      val resp = client.req(s"$url/uninstall", "post",
+        s"""|{
+            |  "cluster_id":"$clusterId",
+            |  "libraries": [{
+            |    "jar": "${lib.jar}"
+            |  }]
+            |}""".stripMargin
+      )
+      client.extract[JObject](resp)
+    }
   }
 
   def clusterStatus(clusterId: String): List[LibraryFullStatus] = {
