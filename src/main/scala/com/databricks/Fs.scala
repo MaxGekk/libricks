@@ -21,16 +21,22 @@ class Fs(client: ShardClient) extends Dbfs(client) {
       val bb = new Array[Byte](BLOCK_SIZE)
       val is = new FileInputStream(localFile)
       val bis = new java.io.BufferedInputStream(is)
-      var bytesRead = bis.read(bb, 0, BLOCK_SIZE)
+      try {
+        var bytesRead = bis.read(bb, 0, BLOCK_SIZE)
 
-      val streamId = create(dst, overwrite)
-      while (bytesRead > 0) {
-        val block = WriteBlock(ByteBuffer.wrap(bb, 0, bytesRead))
-        addBlock(streamId, block)
-        bytesRead = bis.read(bb, 0, BLOCK_SIZE)
+        val streamId = create(dst, overwrite)
+        try {
+          while (bytesRead > 0) {
+            val block = WriteBlock(ByteBuffer.wrap(bb, 0, bytesRead))
+            addBlock(streamId, block)
+            bytesRead = bis.read(bb, 0, BLOCK_SIZE)
+          }
+        } finally {
+          close(streamId)
+        }
+      } finally {
+        bis.close()
       }
-      close(streamId)
-      bis.close()
     }
   }
 }
