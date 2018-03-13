@@ -5,7 +5,8 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class LibrariesTests extends FlatSpec with Matchers with BeforeAndAfter with TestUtils {
   var shard: ShardClient = _
-  val clusterId = "0312-173614-lay60"
+  //val clusterId = "0312-173614-lay60"
+  val clusterId = "0313-085537-beta41"
 
   before {
     shard = Shard(ConfigFactory.load("test-shard")).connect

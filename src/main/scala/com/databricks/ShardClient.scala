@@ -46,7 +46,12 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
     * @param data - entity of the https request. For example, in json format: {"token_id": 42}
     * @return a string with json if http status is 200 otherwise throws an exception
     */
-  def req(endpoint: String, httpMethod: String, data: String = ""): String = {
+  def req(
+    endpoint: String,
+    httpMethod: String,
+    data: String = "",
+    expect100Continue: Boolean = false
+  ): String = {
     val request = httpMethod.toUpperCase match {
       case "POST" => new org.apache.http.client.methods.HttpPost(endpoint)
       case _ =>
@@ -54,6 +59,9 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
           setURI(URI.create(endpoint))
           override def getMethod(): String = httpMethod.toUpperCase
         }
+    }
+    if (expect100Continue) {
+      request.addHeader("Expect", "100-continue")
     }
     request.setEntity(new StringEntity(data))
 

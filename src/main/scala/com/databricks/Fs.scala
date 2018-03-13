@@ -6,9 +6,8 @@ import java.nio.file.Files
 
 class Fs(client: ShardClient) extends Dbfs(client) {
 
-  val MAX_BLOCK_SIZE = 64000
-  //val BLOCK_SIZE = 13330
-  val BLOCK_SIZE = 4*1024
+  val MAX_BLOCK_SIZE = 1048576
+  val BLOCK_SIZE = MAX_BLOCK_SIZE
 
   def upload(src: String, dst: String, overwrite: Boolean = true): Unit = {
     val localFile = new File(src)
@@ -27,9 +26,7 @@ class Fs(client: ShardClient) extends Dbfs(client) {
       val streamId = create(dst, overwrite)
       while (bytesRead > 0) {
         val block = WriteBlock(ByteBuffer.wrap(bb, 0, bytesRead))
-        //println(s"bytesRead = $bytesRead")
         addBlock(streamId, block)
-        //println("Added a block")
         bytesRead = bis.read(bb, 0, BLOCK_SIZE)
       }
       close(streamId)

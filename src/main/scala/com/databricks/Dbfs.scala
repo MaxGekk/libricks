@@ -66,8 +66,10 @@ class Dbfs(client: ShardClient) extends Endpoint {
   @throws(classOf[InvalidState])
   def addBlock(id: StreamId, data: Block): Unit = {
     val base64 = data.base64
-    val body = s"""{"handle": ${id.handle}, "data": "${base64}"}"""
-    val resp = client.req(s"$url/add-block", "post", body)
+    val resp = client.req(s"$url/add-block", "post",
+      s"""{"handle": ${id.handle}, "data": "${base64}"}""",
+      expect100Continue = true
+    )
 
     client.extract[JObject](resp)
   }
@@ -99,7 +101,12 @@ class Dbfs(client: ShardClient) extends Endpoint {
   @throws(classOf[InvalidParameterValue])
   def put(path: String, contents: Block, overwrite: Boolean): Unit = {
     val resp = client.req(s"$url/put", "post",
-      s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
+      s"""|{
+          |  "path":"$path",
+          |  "contents": "${contents.base64}",
+          |  "overwrite": ${overwrite.toString}
+          |}""".stripMargin,
+      expect100Continue = true
     )
     client.extract[JObject](resp)
   }

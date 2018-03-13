@@ -45,7 +45,7 @@ class FsTests extends FlatSpec with Matchers with BeforeAndAfter with TestUtils 
 
       val pw = new PrintWriter(localFile)
       val testLine = "0123456789abcdef0123456789ABCDEF"
-      for (i <- 0 until 4000)
+      for (i <- 0 until 50000)
         pw.write(testLine)
       pw.close()
 
