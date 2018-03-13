@@ -1,7 +1,5 @@
 package com.databricks
 
-import org.json4s.JObject
-
 case class Jar(jar: String)
 
 case class LibraryFullStatus(
@@ -10,11 +8,10 @@ case class LibraryFullStatus(
   messages: Array[String],
   is_library_for_all_clusters: Boolean
 )
-case class LibraryFullStatusList(library_statuses: List[LibraryFullStatus])
 
 case class ClusterLibraryStatuses(
   cluster_id: String,
-  library_statuses: Array[LibraryFullStatus]
+  library_statuses: List[LibraryFullStatus]
 )
 case class ClusterLibraryStatusesList(
   statuses: List[ClusterLibraryStatuses]
@@ -34,7 +31,7 @@ class Libraries(client: ShardClient) extends Endpoint {
             |  }]
             |}""".stripMargin
       )
-      client.extract[JObject](resp)
+      client.extract[Response](resp)
     }
   }
 
@@ -48,7 +45,7 @@ class Libraries(client: ShardClient) extends Endpoint {
             |  }]
             |}""".stripMargin
       )
-      client.extract[JObject](resp)
+      client.extract[Response](resp)
     }
   }
 
@@ -57,7 +54,7 @@ class Libraries(client: ShardClient) extends Endpoint {
       s"""{"cluster_id": "$clusterId"}"""
     )
 
-    client.extract[LibraryFullStatusList](resp).library_statuses
+    client.extract[ClusterLibraryStatuses](resp).library_statuses
   }
 
   def allClusterStatuses: List[ClusterLibraryStatuses] = {

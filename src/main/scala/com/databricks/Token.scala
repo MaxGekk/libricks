@@ -1,10 +1,11 @@
 package com.databricks
 
-import org.json4s._
+import scala.util.parsing.json.JSONObject
 
 /**
   * Information about a token
-  * @param token_id - token hash (sha256) - unique identifier of the token
+ *
+ * @param token_id - token hash (sha256) - unique identifier of the token
   * @param creation_time - value returned by System.currentTimeMillis() when the token
   *                      was generated on server side. It is the difference,
   *                      measured in milliseconds, between the current time and midnight,
@@ -52,7 +53,6 @@ case class TokenList(token_infos: List[TokenInfo])
   * @param client - connection settings to user's shard
   */
 class Token(client: ShardClient) extends Endpoint {
-  private implicit val formats = DefaultFormats
   /** Common suffix of paths to token endpoints */
   override def url: String = client.url + "/2.0/token"
 
@@ -85,7 +85,8 @@ class Token(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/delete", "post",
       s"""{"token_id":"$token_id"}"""
     )
-    client.extract[JObject](resp)
+
+    client.extract[Response](resp)
   }
 
   /**

@@ -41,3 +41,5 @@ class MaxReadSizeExceeded(msg: String) extends Exception
 class InvalidState(msg: String) extends Exception
 class EndpointNotFound(msg: String) extends Exception
 class QuotaExceeded(msg: String) extends Exception
+
+case class Response(msg: Option[String])

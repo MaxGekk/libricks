@@ -1,7 +1,5 @@
 package com.databricks
 
-import org.json4s.JObject
-
 /**
   * Attributes of a file or a directory
   *
@@ -71,7 +69,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
       expect100Continue = true
     )
 
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -85,7 +83,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/close", "post",
       s"""{"handle": ${id.handle}}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -108,7 +106,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
           |}""".stripMargin,
       expect100Continue = true
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -155,7 +153,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/delete", "post",
       s"""{"path": "$path", "recursive": ${recursive.toString}}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -211,7 +209,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/mkdirs", "post",
       s"""{"path":"$path"}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -235,6 +233,6 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/move", "post",
       s"""{"source_path":"$src", "destination_path":"$dst"}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 }

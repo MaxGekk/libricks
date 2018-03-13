@@ -1,11 +1,13 @@
 package com.databricks
 
 import java.net.URI
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import org.apache.http.client.HttpClient
 import org.apache.http.entity.StringEntity
 import org.apache.http.util.EntityUtils
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
 
 /**
   * Databricks REST API client - entry point of all REST API calls
@@ -13,7 +15,8 @@ import org.json4s.jackson.JsonMethods._
   * @param shard - url of the shard like https://my-shard.cloud.databricks.com:443
   */
 case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
-  private implicit val formats = DefaultFormats
+  private val mapper = new ObjectMapper() with ScalaObjectMapper
+  mapper.registerModule(DefaultScalaModule)
 
   /** Common suffix of all endpoints of Databricks public API */
   override lazy val url: String = {
@@ -72,13 +75,12 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
       case 200 => EntityUtils.toString(response.getEntity)
       case 400 =>
         val body = EntityUtils.toString(response.getEntity)
-        parse(body).extract[BricksException].throwException
+        mapper.readValue[BricksException](body).throwException
       case _ => throw new HttpException(statusCode)
     }
   }
 
   def extract[A](json: String)(implicit mf: scala.reflect.Manifest[A]): A = {
-    val parsed = parse(json)
-    parsed.extract[A]
+    mapper.readValue[A](json)
   }
 }
