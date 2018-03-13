@@ -1,6 +1,6 @@
 name := "libricks"
 
-version := "0.3-SNAPSHOT"
+version := "0.4"
 
 scalaVersion := "2.12.4"
 
