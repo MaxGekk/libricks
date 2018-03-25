@@ -1,7 +1,5 @@
 package com.databricks
 
-import org.json4s.JObject
-
 /**
   * Attributes of a file or a directory
   *
@@ -29,7 +27,7 @@ case class FileList(files: List[FileInfo])
   * @param client - connection settings to user's shard
   */
 class Dbfs(client: ShardClient) extends Endpoint {
-  /** Common suffix of paths to token endpoints */
+  /** Common suffix of paths to dbfs endpoints */
   override def url: String = client.url + "/2.0/dbfs"
 
   /**
@@ -65,10 +63,13 @@ class Dbfs(client: ShardClient) extends Endpoint {
   @throws(classOf[ResourceDoesNotExists])
   @throws(classOf[InvalidState])
   def addBlock(id: StreamId, data: Block): Unit = {
+    val base64 = data.base64
     val resp = client.req(s"$url/add-block", "post",
-      s"""{"handle": ${id.handle}, "data": "${data.base64}"}"""
+      s"""{"handle": ${id.handle}, "data": "${base64}"}""",
+      expect100Continue = true
     )
-    client.extract[JObject](resp)
+
+    client.extract[Response](resp)
   }
 
   /**
@@ -82,7 +83,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/close", "post",
       s"""{"handle": ${id.handle}}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -98,9 +99,14 @@ class Dbfs(client: ShardClient) extends Endpoint {
   @throws(classOf[InvalidParameterValue])
   def put(path: String, contents: Block, overwrite: Boolean): Unit = {
     val resp = client.req(s"$url/put", "post",
-      s"""{"path":"$path","contents": "${contents.base64}","overwrite": ${overwrite.toString}}"""
+      s"""|{
+          |  "path":"$path",
+          |  "contents": "${contents.base64}",
+          |  "overwrite": ${overwrite.toString}
+          |}""".stripMargin,
+      expect100Continue = true
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -147,7 +153,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/delete", "post",
       s"""{"path": "$path", "recursive": ${recursive.toString}}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -203,7 +209,7 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/mkdirs", "post",
       s"""{"path":"$path"}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 
   /**
@@ -227,6 +233,6 @@ class Dbfs(client: ShardClient) extends Endpoint {
     val resp = client.req(s"$url/move", "post",
       s"""{"source_path":"$src", "destination_path":"$dst"}"""
     )
-    client.extract[JObject](resp)
+    client.extract[Response](resp)
   }
 }
