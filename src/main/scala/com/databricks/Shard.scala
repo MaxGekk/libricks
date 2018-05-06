@@ -1,17 +1,14 @@
 package com.databricks
 
-import java.security.cert.X509Certificate
-import javax.net.ssl.{HostnameVerifier, SSLSession}
-
 import com.typesafe.config.Config
 import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
 import org.apache.http.client.HttpClient
 import org.apache.http.config.RegistryBuilder
-import org.apache.http.conn.socket.{ConnectionSocketFactory, PlainConnectionSocketFactory}
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory
+import org.apache.http.conn.socket.ConnectionSocketFactory
+import org.apache.http.conn.ssl.{SSLConnectionSocketFactory, TrustSelfSignedStrategy}
 import org.apache.http.impl.client.{BasicCredentialsProvider, HttpClients}
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
-import org.apache.http.ssl.{SSLContextBuilder, TrustStrategy}
+import org.apache.http.ssl.SSLContextBuilder
 
 class Shard extends Endpoint {
   val options = new scala.collection.mutable.HashMap[String, String]
@@ -45,18 +42,13 @@ object Shard {
   }
 
   def client(username: String, password: String): HttpClient = {
-    val sslContext = new SSLContextBuilder().loadTrustMaterial(new TrustStrategy() {
-      def isTrusted(arg0: Array[X509Certificate], arg1: String): Boolean = true
-    }).build()
-
-    val hostnameVerifier = new HostnameVerifier {
-      override def verify(s: String, sslSession: SSLSession): Boolean = true
-    }
-
-    val sslSocketFactory = new SSLConnectionSocketFactory(sslContext, hostnameVerifier)
+    val builder = new SSLContextBuilder()
+    builder.loadTrustMaterial(null, new TrustSelfSignedStrategy())
+    // TLSv1.2 is only available in Java 7 and above
+    builder.setProtocol("TLSv1.2")
+    val sslSocketFactory = new SSLConnectionSocketFactory(builder.build())
     val socketFactoryRegistry = RegistryBuilder.create[ConnectionSocketFactory]()
       .register("https", sslSocketFactory)
-      .register("http", PlainConnectionSocketFactory.getSocketFactory)
       .build()
     val connMgr = new PoolingHttpClientConnectionManager(socketFactoryRegistry)
 
