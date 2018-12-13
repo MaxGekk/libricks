@@ -42,6 +42,12 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
   lazy val lib = new Libraries(this)
 
   /**
+   * Entry point of Execution Context API:
+   * https://docs.databricks.com/api/1.2/index.html#execution-context
+   */
+  lazy val ec = new ExecutionContext(this)
+
+  /**
     * Makes a REST request to specific endpoint
     *
     * @param endpoint - url like https://my-shard.cloud.databricks.com:443/api/2.0/token/list
