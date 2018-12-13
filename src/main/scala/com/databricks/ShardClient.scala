@@ -46,6 +46,11 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
    * https://docs.databricks.com/api/1.2/index.html#execution-context
    */
   lazy val ec = new ExecutionContext(this)
+  /**
+   * Entry point of Command ExecutionAPI:
+   * https://docs.databricks.com/api/1.2/index.html#command-execution
+   */
+  lazy val command = new CommandExecution(this)
 
   /**
     * Makes a REST request to specific endpoint
