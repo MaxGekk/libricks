@@ -22,7 +22,7 @@ class CommandExecutionTests extends FlatSpec with Matchers with BeforeAndAfter {
     val IdResult(commandId) = shard.command.execute("scala", clusterId, contextId,
     "1 + 1")
     var status: String = ""
-    var res = FinishedCommand("", "", Results("", ""))
+    var res:CommandResult = null
     do {
       res = shard.command.status(clusterId, contextId, commandId)
       println("command: " + res)
@@ -30,6 +30,21 @@ class CommandExecutionTests extends FlatSpec with Matchers with BeforeAndAfter {
       Thread.sleep(1000)
     } while (status == "Running")
 
-    assert(res.results.data == "res0: Int = 2")
+    assert(res.results.asInstanceOf[ApiTextResult].data == "res0: Int = 2")
+  }
+
+  it should "command execution failure" in {
+    val IdResult(commandId) = shard.command.execute("scala", clusterId, contextId,
+      """throw new IllegalArgumentException("Oops")""")
+    var status: String = ""
+    var res:CommandResult = null
+    do {
+      res = shard.command.status(clusterId, contextId, commandId)
+      println("command: " + res)
+      status = res.status
+      Thread.sleep(1000)
+    } while (status == "Running")
+
+    assert(res.results.asInstanceOf[ApiErrorResult].summary == Some("java.lang.IllegalArgumentException: Oops"))
   }
 }
