@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.entity.StringEntity
+import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.util.EntityUtils
 
 /**
@@ -52,6 +54,19 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
    */
   lazy val command = new CommandExecution(this)
 
+  def sendRequest(request: HttpUriRequest): String = {
+    val response = client.execute(request)
+    val statusCode = response.getStatusLine.getStatusCode
+
+    statusCode match {
+      case 200 => EntityUtils.toString(response.getEntity)
+      case 400 =>
+        val body = EntityUtils.toString(response.getEntity)
+        mapper.readValue[BricksException](body).throwException
+      case _ => throw new HttpException(statusCode)
+    }
+  }
+
   /**
     * Makes a REST request to specific endpoint
     *
@@ -78,17 +93,24 @@ case class ShardClient(client: HttpClient, shard: String) extends Endpoint {
       request.addHeader("Expect", "100-continue")
     }
     request.setEntity(new StringEntity(data))
+    sendRequest(request)
+  }
 
-    val response = client.execute(request)
-    val statusCode = response.getStatusLine.getStatusCode
+  def postFile(
+      endpoint: String,
+      fileFieldName: String,
+      fileData: String,
+      fields: Map[String, String]): String = {
+    val post = new org.apache.http.client.methods.HttpPost(endpoint)
 
-    statusCode match {
-      case 200 => EntityUtils.toString(response.getEntity)
-      case 400 =>
-        val body = EntityUtils.toString(response.getEntity)
-        mapper.readValue[BricksException](body).throwException
-      case _ => throw new HttpException(statusCode)
+    val entityBuilder = MultipartEntityBuilder.create()
+    entityBuilder.addBinaryBody(fileFieldName, fileData.getBytes("UTF-8"))
+    fields.foreach { case (key, value) =>
+      entityBuilder.addTextBody(key, value)
     }
+
+    post.setEntity(entityBuilder.build())
+    sendRequest(post)
   }
 
   def extract[A](json: String)(implicit mf: scala.reflect.Manifest[A]): A = {

@@ -1,6 +1,6 @@
 name := "libricks"
 
-version := "0.6"
+version := "0.7"
 
 scalaVersion := "2.12.8"
 //scalaVersion := "2.11.12"
@@ -13,7 +13,8 @@ libraryDependencies ++= Seq(
   "org.apache.httpcomponents" % "httpclient" % "4.5.5",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.4",
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1"
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
+  "org.apache.httpcomponents" % "httpmime" % "4.5.6"
 )
 
 bintrayPackageLabels := Seq("databricks", "rest", "dbfs", "scala")

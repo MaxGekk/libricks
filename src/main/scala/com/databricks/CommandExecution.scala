@@ -22,14 +22,8 @@ class CommandExecution(client: ShardClient) extends Endpoint {
    * @param command - command to run in the execution context
    */
   def execute(language: String, clusterId: String, contextId: String, command: String): IdResult = {
-    val resp = client.req(s"$url/execute", "post",
-      s"""{
-         |  "language": "$language",
-         |  "clusterId": "${clusterId}",
-         |  "contextId": "${contextId}",
-         |  "command": "${command}"
-         |}""".stripMargin
-    )
+    val resp = client.postFile(s"$url/execute", "command", command,
+      Map("language" -> language, "clusterId" -> clusterId, "contextId" -> contextId))
     client.extract[IdResult](resp)
   }
 
